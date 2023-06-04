@@ -2,6 +2,7 @@ import threading
 from queue import Queue
 import cv2
 from DecisionMakingAgent import DecisionMakingAgent
+from DisplayAgent import DisplayAgent
 from ImageProcessingAgent import ImageProcessingAgent
 from AdvertisingAgent import AdvertisingAgent
 
@@ -10,9 +11,10 @@ class CoreAgent:
         self.model_paths = model_paths
         self.characteristics = characteristics
         self.img_path = img_path
-        self.imageProcessingAgent = ImageProcessingAgent(model_paths, 'mqtt_broker', 1883, 'image_processing/output')
+        self.imageProcessingAgent = ImageProcessingAgent(model_paths)
         self.ads_queue = Queue()
         self.advertisingAgents = [AdvertisingAgent(characteristic) for characteristic in self.characteristics]
+        self.display_agent = DisplayAgent('mqtt_broker_address', 1883, 'display_agent/input')
         self.decisionMakingAgent = DecisionMakingAgent(self.ads_queue)
 
     def run(self):
@@ -35,3 +37,5 @@ class CoreAgent:
         winning_ad = self.decisionMakingAgent.choose_ad()
         print('WINNING AD')
         print(winning_ad)
+        #Test when MQTT broker implemented
+        #self.displayAgent.display_ad(winning_ad)

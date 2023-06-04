@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 
 
 class ImageProcessingAgent:
-    def __init__(self, model_paths, mqtt_broker, mqtt_port, topic, frame_size=(1280, 720)):
+    def __init__(self, model_paths, frame_size=(1280, 720)):
         self.frame_width, self.frame_height = frame_size
         self.age_net = cv2.dnn.readNetFromCaffe(model_paths['age_proto'], model_paths['age_model'])
         self.face_net = cv2.dnn.readNetFromCaffe(model_paths['face_proto'], model_paths['face_model'])
@@ -17,11 +17,6 @@ class ImageProcessingAgent:
         self.AGE_INTERVALS = ['(0, 2)', '(4, 6)', '(8, 12)', '(15, 20)',
                               '(25, 32)', '(38, 43)', '(48, 53)', '(60, 100)']
         self.GENDER_LIST = ['Male', 'Female']
-
-        # Initialize MQTT client and connect to the broker
-        #self.client = mqtt.Client()
-        #self.client.connect(mqtt_broker, mqtt_port, 60)
-        #self.topic = topic
 
     def get_faces(self, frame, confidence_threshold=0.5):
         # convert the frame into a blob to be ready for NN input
@@ -90,10 +85,4 @@ class ImageProcessingAgent:
             # do something with the age and gender results (e.g., print them out)
 
         print(results)
-        # Publish the results
-        #self.send_data(results)
         return results
-
-    def send_data(self, data):
-        # Convert the data to a JSON string and publish it
-        self.client.publish(self.topic, json.dumps(data))
