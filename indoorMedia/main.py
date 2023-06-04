@@ -1,6 +1,4 @@
-import cv2
-
-from ImageProcessingAgent import ImageProcessingAgent
+from CoreAgent import CoreAgent
 
 model_paths = {
     'face_proto': 'deployproto.prototxt',
@@ -10,8 +8,8 @@ model_paths = {
     'gender_proto': 'deploy_gender.prototxt',
     'gender_model': 'gender_net.caffemodel',
 }
+characteristics = ['gender', 'age']
+img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
 
-agent = ImageProcessingAgent(model_paths, 'mqtt_broker', 1883, 'image_processing/output')
-
-img = cv2.imread('happy-friends-from-different-races-culture-laughing_166273-465.jpg')
-agent.process_image(img)
+core_agent = CoreAgent(model_paths, characteristics, img_path)
+core_agent.run()
