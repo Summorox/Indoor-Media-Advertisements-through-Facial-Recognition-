@@ -18,12 +18,9 @@ class CoreAgent:
         demographic_data = self.imageProcessingAgent.process_image(img)
         winning_ad = self.decisionMakingAgent.auction(demographic_data)
 
-        print('WINNING AD')
-        print(winning_ad)
-        image_test = 'test_image_ad.jpg'
-        video_test = 'test_video_ad.mp4'
-        winning_ad = video_test
+        #image_test = 'test_image_ad.jpg'
+        #video_test = 'test_video_ad.mp4'
         if winning_ad.split('.')[-1] in ['jpeg', 'jpg', 'png']:
-            self.displayAgent.display_image(winning_ad)
+            self.displayAgent.display_image('ads/'+winning_ad)
         elif winning_ad.split('.')[-1] in ['avi', 'mp4']:
-            self.displayAgent.display_video(winning_ad)
+            self.displayAgent.display_video('ads/'+winning_ad)

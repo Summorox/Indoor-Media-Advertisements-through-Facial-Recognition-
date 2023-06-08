@@ -1,6 +1,6 @@
 from CameraAgent import CameraAgent
 from CoreAgent import CoreAgent
-
+import csv
 model_paths = {
     'face_proto': 'deployproto.prototxt',
     'face_model': 'res10_300x300_ssd_iter_140000_fp16.caffemodel',
@@ -19,7 +19,8 @@ camera_agent = CameraAgent(mqtt_broker, mqtt_port, mqtt_topic)
 camera_agent.capture_and_send_image()
 camera_agent.close()
 
-img_path = 'capture.jpg'
+img_path = 'capture.jpg.jpg'
+#img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
 
 core_agent = CoreAgent(model_paths, characteristics, img_path)
 core_agent.run()

@@ -1,7 +1,7 @@
 import threading
 from queue import Queue
 
-from indoorMedia.AdvertisingAgent import AdvertisingAgent
+from AdvertisingAgent import AdvertisingAgent
 
 
 class DecisionMakingAgent:
@@ -11,26 +11,26 @@ class DecisionMakingAgent:
         self.advertisingAgents = [AdvertisingAgent(characteristic) for characteristic in self.characteristics]
 
     def auction(self, demographic_data):
-        # Start a thread for each Advertising Agent
         threads = []
         for agent in self.advertisingAgents:
             thread = threading.Thread(target=agent.propose_ad, args=(demographic_data, self.ads_queue))
             thread.start()
             threads.append(thread)
 
-        # Wait for all agents to finish
         for thread in threads:
             thread.join()
 
         return self.choose_ad()
+
     def choose_ad(self):
         max_bid = 0
         winning_ad = None
         while not self.ads_queue.empty():
             ad, bid = self.ads_queue.get()
-            print(ad)
-            print(bid)
             if bid > max_bid:
                 max_bid = bid
                 winning_ad = ad
+        print('WINNING AD')
+        print(max_bid)
+        print(winning_ad)
         return winning_ad
