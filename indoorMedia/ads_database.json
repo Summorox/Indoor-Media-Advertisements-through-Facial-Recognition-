@@ -6,6 +6,7 @@
     {"ad_id": "Zara_dress15", "gender": "Female", "age": [25,32], "money_to_display": 14, "ad_file": "zara_dress15.png"},
     {"ad_id": "Tesla_modelX", "gender": "Male", "age": [38,43], "money_to_display": 15, "ad_file": "tesla_modelX.jpg"},
     {"ad_id": "Revlon_makeup3", "gender": "Female", "age": [25,32], "money_to_display": 11, "ad_file": "revlon_makeup3.jpg"},
+    {"ad_id": "Apple_ipad7", "gender": "Male", "age": [25,32], "money_to_display": 12, "ad_file": "apple_ipad7.jpg"},
     {"ad_id": "Apple_iphone15", "gender": "Female", "age": [15,20], "money_to_display": 10, "ad_file": "apple_iphone15.jpg"},
     {"ad_id": "Gerber_babyfood1", "gender": "Male", "age": [0,2], "money_to_display": 8, "ad_file": "gerber_babyfood1.jpg"},
     {"ad_id": "Pampers_diapers2", "gender": "Female", "age": [0,2], "money_to_display": 9, "ad_file": "pampers_diapers2.jpg"},

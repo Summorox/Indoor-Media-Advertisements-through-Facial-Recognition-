@@ -10,9 +10,8 @@ class AdvertisingAgent:
         for data in demographic_data:
             # Extract age range from string format and convert to list of integers
             age_range = list(map(int, data['age'].strip('()').split(', ')))
-            print(data['gender'])
-            print(age_range)
             filtered_ads = [ad for ad in self.ads_database if ad['gender'] == data['gender'] and ad['age'] == age_range]
+            print('Agent: ' + self.characteristic+ ' - ' + str(age_range) + ' - ' +data['gender'])
             if filtered_ads:
                 ad_info = max(filtered_ads, key=lambda x: x['money_to_display'])
                 num_people = len(
