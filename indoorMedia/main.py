@@ -15,12 +15,12 @@ mqtt_broker = 'mqtt_broker'
 mqtt_port = 1883
 mqtt_topic = 'image_processing/input'
 
-#camera_agent = CameraAgent(mqtt_broker, mqtt_port, mqtt_topic)
-#camera_agent.capture_and_send_image()
-#camera_agent.close()
+camera_agent = CameraAgent(mqtt_broker, mqtt_port, mqtt_topic)
+camera_agent.capture_and_send_image()
+camera_agent.close()
 
-#img_path = 'capture.jpg'
-img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
+img_path = 'capture.jpg'
+#img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
 
 core_agent = CoreAgent(model_paths, characteristics, img_path)
 core_agent.run()
