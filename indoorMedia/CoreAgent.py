@@ -20,7 +20,6 @@ class CoreAgent:
         self.decisionMakingAgent = DecisionMakingAgent(self.characteristics)
 
         self.client = mqtt.Client("Core")
-        #self.client.username_pw_set("streamsheets", "Ys8QjWPpo5XYz80oUzmsfMkIkjVu6fpU")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
@@ -34,6 +33,8 @@ class CoreAgent:
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))
         client.subscribe(self.mqtt_topic)
+        img = cv2.imread(self.img_path)
+        self.process_image(img)
 
     def on_message(self, client, userdata, msg):
         print(msg.payload)
@@ -58,9 +59,9 @@ class CoreAgent:
 
     def publish_ad(self, ad_path):
         client = mqtt.Client('Display')
-        #client.username_pw_set("streamsheets", "Ys8QjWPpo5XYz80oUzmsfMkIkjVu6fpU")
         client.connect(self.display_broker, self.mqtt_port, 60)
         client.publish(self.display_topic, ad_path)
+        print(ad_path)
         client.disconnect()
     def run(self):
         self.client.connect(self.mqtt_broker, self.mqtt_port, 60)

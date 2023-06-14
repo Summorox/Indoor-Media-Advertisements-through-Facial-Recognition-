@@ -13,15 +13,10 @@ mqtt_broker = 'broker.hivemq.com'
 mqtt_port = 1883
 mqtt_topic = 'PICTURE_FCR'
 
-mqtt_display_broker = 'mqtt_broker'
-mqtt_display_topic = 'DISPLAY'
+mqtt_display_broker = 'broker.hivemq.com'
+mqtt_display_topic = 'DISPLAY_FCR'
 
-#camera_agent = CameraAgent(mqtt_broker, mqtt_port, mqtt_topic)
-#camera_agent.capture_and_send_image()
-#camera_agent.close()
-
-img_path = ''
-#img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
+img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
 
 core_agent = CoreAgent(model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic,mqtt_display_broker,mqtt_display_topic)
 core_agent.run()

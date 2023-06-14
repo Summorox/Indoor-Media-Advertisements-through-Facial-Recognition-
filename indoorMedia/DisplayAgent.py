@@ -1,11 +1,10 @@
 import cv2
-from paho import mqtt
-
+import paho.mqtt.client as mqtt
 
 class DisplayAgent:
 
     def __init__(self, mqtt_broker, mqtt_port, mqtt_topic):
-        self.client = mqtt.Client()
+        self.client = mqtt.Client("Display2")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
@@ -18,7 +17,8 @@ class DisplayAgent:
         client.subscribe(self.mqtt_topic)
 
     def on_message(self, client, userdata, msg):
-        ad_path = msg.payload.decode()  # Decode the message payload
+        ad_path = msg.payload.decode()
+        print(ad_path)# Decode the message payload
         self.display_ad(ad_path)
 
     def display_image(self, img_path):
