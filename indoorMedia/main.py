@@ -9,14 +9,12 @@ model_paths = {
 }
 characteristics = ['gender', 'age']
 
-mqtt_broker = 'broker.hivemq.com'
+mqtt_broker = '192.168.137.1'
 mqtt_port = 1883
-mqtt_topic = 'PICTURE_FCR'
+mqtt_topic = 'PICTURE'
 
-mqtt_display_broker = 'broker.hivemq.com'
-mqtt_display_topic = 'DISPLAY_FCR'
+img_path=''
+#img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
 
-img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
-
-core_agent = CoreAgent(model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic,mqtt_display_broker,mqtt_display_topic)
+core_agent = CoreAgent(model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic)
 core_agent.run()

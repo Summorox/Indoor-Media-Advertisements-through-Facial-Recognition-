@@ -6,13 +6,11 @@ import numpy as np
 from PIL import Image
 
 from DecisionMakingAgent import DecisionMakingAgent
-from DisplayAgent import DisplayAgent
 from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
 
 class CoreAgent:
-    def __init__(self, model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic,
-                 mqtt_broker_display, mqtt_topic_display):
+    def __init__(self, model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic):
         self.model_paths = model_paths
         self.characteristics = characteristics
         self.img_path = img_path
@@ -27,21 +25,15 @@ class CoreAgent:
         self.mqtt_port = mqtt_port
         self.mqtt_topic = mqtt_topic
 
-        self.display_topic = mqtt_topic_display
-        self.display_broker = mqtt_broker_display
-
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))
         client.subscribe(self.mqtt_topic)
-        img = cv2.imread(self.img_path)
-        self.process_image(img)
 
     def on_message(self, client, userdata, msg):
         print(msg.payload)
         # Base64 decode the payload
         img_bytes = base64.b64decode(msg.payload)
         image = Image.open(BytesIO(img_bytes))
-        image.show()
         image.save('capturar.jpg')
         # Convert the bytes to a numpy array
         nparr = np.frombuffer(img_bytes, np.uint8)
@@ -54,12 +46,12 @@ class CoreAgent:
 
     def process_image(self, img):
         demographic_data = self.imageProcessingAgent.process_image(img)
-        winning_ad = self.decisionMakingAgent.auction(demographic_data)
-        self.publish_ad(winning_ad)
+        winning_ad = 'ads/'+self.decisionMakingAgent.auction(demographic_data)
+        print(winning_ad)
 
     def publish_ad(self, ad_path):
         client = mqtt.Client('Display')
-        client.connect(self.display_broker, self.mqtt_port, 60)
+        client.connect(self.mqtt_broker, self.mqtt_port, 60)
         client.publish(self.display_topic, ad_path)
         print(ad_path)
         client.disconnect()
