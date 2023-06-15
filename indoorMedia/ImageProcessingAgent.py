@@ -4,15 +4,24 @@ import json
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
+from spade.behaviour import OneShotBehaviour
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour
+from spade.message import Message
+from spade.template import Template
 import spade
 
 
-class ImageProcessingAgent(spade.agent.Agent):
-    class ProcessImageBehaviour(spade.behaviour.CyclicBehaviour):
+class ImageProcessingAgent(Agent):
+    def __init__(self, model_paths, jid, passwd):
+        super().__init__(jid, passwd)
+        self.model_paths = model_paths
+        self.tracing = True
+    class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
             msg = await self.receive()
             if msg:
-                print('test')
+                print("[ImageProcessingAgent] Received a message")
                 img_bytes = base64.b64decode(msg.body)
                 nparr = np.frombuffer(img_bytes, np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -21,14 +30,10 @@ class ImageProcessingAgent(spade.agent.Agent):
                     return
                 demographic_data = await self.agent.process_image(img)
                 print(demographic_data)
-                msg = spade.message.Message()
-                msg.to = "advisage_core@localhost"
+                msg = Message(to='core@localhost')
                 msg.body = json.dumps(demographic_data)
+                msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
                 await self.send(msg)
-
-    def __init__(self, model_paths, jid, passwd, verify_security=False):
-        super().__init__(jid, passwd, verify_security)
-        self.model_paths = model_paths
     async def setup(self):
         self.frame_width, self.frame_height = 1280, 720
         self.age_net = cv2.dnn.readNetFromCaffe(self.model_paths['age_proto'], self.model_paths['age_model'])
@@ -41,8 +46,10 @@ class ImageProcessingAgent(spade.agent.Agent):
         self.GENDER_LIST = ['Male', 'Female']
 
         print("ImageProcessingAgent started")
-        b = self.ProcessImageBehaviour()
-        self.add_behaviour(b)
+        receiveBehaviour = self.ReceiveBehaviour()
+        template = Template()
+        template.set_metadata("performative", "inform")
+        self.add_behaviour(receiveBehaviour,template)
 
     def get_faces(self, frame, confidence_threshold=0.5):
         # convert the frame into a blob to be ready for NN input

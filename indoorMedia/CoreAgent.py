@@ -6,47 +6,53 @@ import cv2
 import base64
 import numpy as np
 import spade
+from spade.behaviour import OneShotBehaviour
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour
+from spade.message import Message
+from spade.template import Template
 
 from DecisionMakingAgent import DecisionMakingAgent
 from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
 
-class CoreAgent(spade.agent.Agent):
-    class CoreBehaviour(spade.behaviour.CyclicBehaviour):
-        async def run(self):
-            img = cv2.imread(self.agent.img_path)
-            await self.process_image(img)
-            msg = await self.receive()
-            if msg:
-                print('test')
-                demographic_data = json.loads(msg.body)
-                #winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
-                print(demographic_data)
-
-        async def process_image(self, img):
-            _, img_encoded = cv2.imencode('.jpg', img)
-            img_bytes = img_encoded.tobytes()
-            img_str = base64.b64encode(img_bytes).decode()
-            msg = spade.message.Message()
-            msg.to = "advisage_image_processing@localhost"
-            msg.body = img_str
-            print(img)
-            if self.agent.is_alive():  # Check if the agent is running
-                await self.send(msg)
-            # demographic_data = self.imageProcessingAgent.process_image(img)
-            # winning_ad = 'ads/'+self.decisionMakingAgent.auction(demographic_data)
-            # print(winning_ad)
-            pass
-    def __init__(self, img_path, mqtt_broker, mqtt_port, mqtt_topic, jid, passwd, verify_security=False):
-        super().__init__(jid, passwd, verify_security)
+class CoreAgent(Agent):
+    def __init__(self, img_path, mqtt_broker, mqtt_port, mqtt_topic, jid, passwd):
+        super().__init__(jid, passwd)
         self.mqtt_broker = mqtt_broker
         self.mqtt_port = mqtt_port
         self.mqtt_topic = mqtt_topic
         self.img_path = img_path
+        self.tracing = True
+
+    class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive()
+            if msg:
+                print('test')
+                demographic_data = json.loads(msg.body)
+                # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
+                print(demographic_data)
+    class RequestBehaviour(OneShotBehaviour):
+        async def run(self):
+            img = cv2.imread(self.agent.img_path)
+            _, img_encoded = cv2.imencode('.jpg', img)
+            img_bytes = img_encoded.tobytes()
+            img_str = base64.b64encode(img_bytes).decode()
+            msg = Message(to="image@localhost")
+            msg.body = img_str
+            msg.set_metadata("performative", "inform")
+            print(f"[CoreAgent] Sending message to {msg.to}")
+            await self.send(msg)
+            print(f"[CoreAgent] Message sent to {msg.to}")
     async def setup(self):
         print("CoreAgent started")
-        core_behaviour = self.CoreBehaviour()
-        self.add_behaviour(core_behaviour)
+        receive_behaviour = self.ReceiveBehaviour()
+        request_behaviour = self.RequestBehaviour()
+        template = Template()
+        template.set_metadata("performative", "inform")
+        self.add_behaviour(receive_behaviour,template)
+        self.add_behaviour(request_behaviour,template)
         #self.client = mqtt.Client("Core")
         #self.client.on_connect = self.on_connect
         #self.client.on_message = self.on_message
