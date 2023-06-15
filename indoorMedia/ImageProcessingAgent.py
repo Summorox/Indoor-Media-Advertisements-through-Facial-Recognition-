@@ -10,6 +10,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 import spade
+import network_mock
 
 
 class ImageProcessingAgent(Agent):
@@ -19,8 +20,10 @@ class ImageProcessingAgent(Agent):
         self.tracing = True
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
+            #msg = network_mock.IMAGE_MESSAGE
             msg = await self.receive()
             if msg:
+                #network_mock.IMAGE_MESSAGE = None
                 print("[ImageProcessingAgent] Received a message")
                 img_bytes = base64.b64decode(msg.body)
                 nparr = np.frombuffer(img_bytes, np.uint8)
@@ -29,10 +32,10 @@ class ImageProcessingAgent(Agent):
                     print("Image is empty")
                     return
                 demographic_data = await self.agent.process_image(img)
-                print(demographic_data)
                 msg = Message(to='core@localhost')
                 msg.body = json.dumps(demographic_data)
                 msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
+                #network_mock.DEMOGRAPHICS_MESSAGE = msg
                 await self.send(msg)
     async def setup(self):
         self.frame_width, self.frame_height = 1280, 720
@@ -96,7 +99,7 @@ class ImageProcessingAgent(Agent):
         self.age_net.setInput(blob)
         return self.age_net.forward()
 
-    def process_image(self, input_img):
+    async def process_image(self, input_img):
         frame = cv2.resize(input_img, (self.frame_width, self.frame_height))
         faces = self.get_faces(frame)
 
@@ -116,6 +119,4 @@ class ImageProcessingAgent(Agent):
                 "age": age
             })
             # do something with the age and gender results (e.g., print them out)
-
-        print(results)
         return results

@@ -27,10 +27,16 @@ imageAgent = ImageProcessingAgent(model_paths, "image@localhost", "password")
 
 coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core@localhost", "password")
 
+async def stopAgents():
+    future_image = imageAgent.stop()
+    await future_image  # Wait for future_image to complete before starting the coreAgent
+    future_core = coreAgent.stop()
+    await future_core
+
 async def runAgents():
     future_image = imageAgent.start()
     await future_image  # Wait for future_image to complete before starting the coreAgent
-    time.sleep(3)
+    time.sleep(2)
     future_core = coreAgent.start()
     await future_core
 

@@ -15,6 +15,7 @@ from spade.template import Template
 from DecisionMakingAgent import DecisionMakingAgent
 from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
+import network_mock
 
 class CoreAgent(Agent):
     def __init__(self, img_path, mqtt_broker, mqtt_port, mqtt_topic, jid, passwd):
@@ -27,12 +28,15 @@ class CoreAgent(Agent):
 
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
+            #msg = network_mock.DEMOGRAPHICS_MESSAGE
             msg = await self.receive()
             if msg:
+                #network_mock.DEMOGRAPHICS_MESSAGE= None
                 print('test')
                 demographic_data = json.loads(msg.body)
                 # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
                 print(demographic_data)
+
     class RequestBehaviour(OneShotBehaviour):
         async def run(self):
             img = cv2.imread(self.agent.img_path)
@@ -43,8 +47,10 @@ class CoreAgent(Agent):
             msg.body = img_str
             msg.set_metadata("performative", "inform")
             print(f"[CoreAgent] Sending message to {msg.to}")
+            #network_mock.IMAGE_MESSAGE = msg
             await self.send(msg)
             print(f"[CoreAgent] Message sent to {msg.to}")
+
     async def setup(self):
         print("CoreAgent started")
         receive_behaviour = self.ReceiveBehaviour()
