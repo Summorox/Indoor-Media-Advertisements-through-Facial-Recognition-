@@ -1,22 +1,48 @@
+import base64
 import json
 
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
+import spade
 
 
+class ImageProcessingAgent(spade.agent.Agent):
+    class ProcessImageBehaviour(spade.behaviour.CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive()
+            if msg:
+                print('test')
+                img_bytes = base64.b64decode(msg.body)
+                nparr = np.frombuffer(img_bytes, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if img is None:
+                    print("Image is empty")
+                    return
+                demographic_data = await self.agent.process_image(img)
+                print(demographic_data)
+                msg = spade.message.Message()
+                msg.to = "advisage_core@localhost"
+                msg.body = json.dumps(demographic_data)
+                await self.send(msg)
 
-class ImageProcessingAgent:
-    def __init__(self, model_paths, frame_size=(1280, 720)):
-        self.frame_width, self.frame_height = frame_size
-        self.age_net = cv2.dnn.readNetFromCaffe(model_paths['age_proto'], model_paths['age_model'])
-        self.face_net = cv2.dnn.readNetFromCaffe(model_paths['face_proto'], model_paths['face_model'])
-        self.gender_net = cv2.dnn.readNetFromCaffe(model_paths['gender_proto'], model_paths['gender_model'])
+    def __init__(self, model_paths, jid, passwd, verify_security=False):
+        super().__init__(jid, passwd, verify_security)
+        self.model_paths = model_paths
+    async def setup(self):
+        self.frame_width, self.frame_height = 1280, 720
+        self.age_net = cv2.dnn.readNetFromCaffe(self.model_paths['age_proto'], self.model_paths['age_model'])
+        self.face_net = cv2.dnn.readNetFromCaffe(self.model_paths['face_proto'], self.model_paths['face_model'])
+        self.gender_net = cv2.dnn.readNetFromCaffe(self.model_paths['gender_proto'], self.model_paths['gender_model'])
 
         self.MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
         self.AGE_INTERVALS = ['(0, 2)', '(4, 6)', '(8, 12)', '(15, 20)',
                               '(25, 32)', '(38, 43)', '(48, 53)', '(60, 100)']
         self.GENDER_LIST = ['Male', 'Female']
+
+        print("ImageProcessingAgent started")
+        b = self.ProcessImageBehaviour()
+        self.add_behaviour(b)
 
     def get_faces(self, frame, confidence_threshold=0.5):
         # convert the frame into a blob to be ready for NN input
