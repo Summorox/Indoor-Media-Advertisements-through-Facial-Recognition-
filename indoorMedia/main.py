@@ -1,10 +1,12 @@
 import asyncio
 import time
 
+import network_config
+from AdvertisingAgent import AdvertisingAgent
 from CoreAgent import CoreAgent
-from indoorMedia.ImageProcessingAgent import ImageProcessingAgent
-
-characteristics = ['gender', 'age']
+from DecisionMakingAgent import DecisionMakingAgent
+from DisplayAgent import DisplayAgent
+from ImageProcessingAgent import ImageProcessingAgent
 
 mqtt_broker = '192.168.137.1'
 mqtt_port = 1883
@@ -20,22 +22,48 @@ model_paths = {
             'gender_proto': 'deploy_gender.prototxt',
             'gender_model': 'gender_net.caffemodel',
         }
-#core_agent = CoreAgent(model_paths, characteristics, img_path, mqtt_broker, mqtt_port, mqtt_topic)
-#core_agent.run()
 
-imageAgent = ImageProcessingAgent(model_paths, "image@localhost", "password")
+ad_agents = ["gender", "age", "age_gender"]
 
-coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core@localhost", "password")
+
+imageAgent = ImageProcessingAgent(model_paths, "image"+network_config.SERVER, "password")
+
+coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core"+network_config.SERVER, "password")
+
+auctionAgent = DecisionMakingAgent("auction"+network_config.SERVER, "password", ad_agents)
+
+displayAgent = DisplayAgent("display"+network_config.SERVER, "password")
+
+advertising_agents = []
+for i, characteristic in enumerate(ad_agents):
+    agent = AdvertisingAgent(f"{characteristic}"+network_config.SERVER, "password", characteristic)
+    advertising_agents.append(agent)
 
 async def stopAgents():
     future_image = imageAgent.stop()
     await future_image  # Wait for future_image to complete before starting the coreAgent
     future_core = coreAgent.stop()
     await future_core
+    future_auction = auctionAgent.stop()
+    await future_auction
+    for agent in advertising_agents:
+        await agent.stop()
+    future_display = displayAgent.stop()
+    await future_display
 
 async def runAgents():
     future_image = imageAgent.start()
     await future_image  # Wait for future_image to complete before starting the coreAgent
+    time.sleep(2)
+    future_auction = auctionAgent.start()
+    await future_auction
+    for agent in advertising_agents:
+        time.sleep(2)
+        future_advertising = agent.start()
+        await future_advertising
+    time.sleep(2)
+    future_display = displayAgent.start()
+    await  future_display
     time.sleep(2)
     future_core = coreAgent.start()
     await future_core

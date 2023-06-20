@@ -1,26 +1,33 @@
 import cv2
-import paho.mqtt.client as mqtt
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour
+from spade.template import Template
 
-class DisplayAgent:
 
-    def __init__(self, mqtt_broker, mqtt_port, mqtt_topic):
-        self.client = mqtt.Client("Display2")
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
+class DisplayAgent(Agent):
 
-        self.mqtt_broker = mqtt_broker
-        self.mqtt_port = mqtt_port
-        self.mqtt_topic = mqtt_topic
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
 
-    def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code " + str(rc))
-        client.subscribe(self.mqtt_topic)
+    class ReceiveBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive()
+            if msg:
+                ad_path = msg.body
+                self.agent.display_ad(ad_path)
 
-    def on_message(self, client, userdata, msg):
-        ad_path = msg.payload.decode()
-        print(ad_path)# Decode the message payload
-        self.display_ad(ad_path)
+    async def setup(self):
+        print("DisplayAgent started")
+        receiveBehaviour = self.ReceiveBehaviour()
+        template = Template()
+        template.set_metadata("performative", "inform")
+        self.add_behaviour(receiveBehaviour, template)
 
+    def display_ad(self, ad_path):
+        if ad_path.split('.')[-1] in ['jpeg', 'jpg', 'png']:
+            self.display_image(ad_path)
+        elif ad_path.split('.')[-1] in ['avi', 'mp4']:
+            self.display_video(ad_path)
     def display_image(self, img_path):
         img = cv2.imread(img_path)
         cv2.imshow('Advertisement', img)
@@ -40,13 +47,3 @@ class DisplayAgent:
                 break
         cap.release()
         cv2.destroyAllWindows()
-
-    def display_ad(self, ad_path):
-        if ad_path.split('.')[-1] in ['jpeg', 'jpg', 'png']:
-            self.display_image(ad_path)
-        elif ad_path.split('.')[-1] in ['avi', 'mp4']:
-            self.display_video(ad_path)
-
-    def run(self):
-        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        self.client.loop_forever()

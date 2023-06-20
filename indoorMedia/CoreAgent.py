@@ -15,7 +15,7 @@ from spade.template import Template
 from DecisionMakingAgent import DecisionMakingAgent
 from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
-import network_mock
+import network_config
 
 class CoreAgent(Agent):
     def __init__(self, img_path, mqtt_broker, mqtt_port, mqtt_topic, jid, passwd):
@@ -25,31 +25,45 @@ class CoreAgent(Agent):
         self.mqtt_topic = mqtt_topic
         self.img_path = img_path
         self.tracing = True
+        self.imageReceived = None
 
-    class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
+    class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
             #msg = network_mock.DEMOGRAPHICS_MESSAGE
             msg = await self.receive()
             if msg:
-                #network_mock.DEMOGRAPHICS_MESSAGE= None
-                print('test')
-                demographic_data = json.loads(msg.body)
-                # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
-                print(demographic_data)
-
-    class RequestBehaviour(OneShotBehaviour):
+                if("image"+network_config.SERVER ==str(msg.sender)):
+                    #network_mock.DEMOGRAPHICS_MESSAGE= None
+                    print('test')
+                    demographic_data = json.loads(msg.body)
+                    # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
+                    print(demographic_data)
+                    msgAuction = Message(to="auctiont"+network_config.SERVER)
+                    msgAuction.body = json.dumps(demographic_data)
+                    msgAuction.set_metadata("performative", "inform")
+                    await self.send(msgAuction)
+                elif("auction"+network_config.SERVER == str(msg.sender)):
+                    winning_ad = msg.body
+                    msgDisplay = Message(to="display"+network_config.SERVER)
+                    print(winning_ad)
+                    msgDisplay.body =winning_ad
+                    msgDisplay.set_metadata("performative", "inform")
+                    await self.send(msgDisplay)
+    class RequestBehaviour(CyclicBehaviour):
         async def run(self):
-            img = cv2.imread(self.agent.img_path)
-            _, img_encoded = cv2.imencode('.jpg', img)
-            img_bytes = img_encoded.tobytes()
-            img_str = base64.b64encode(img_bytes).decode()
-            msg = Message(to="image@localhost")
-            msg.body = img_str
-            msg.set_metadata("performative", "inform")
-            print(f"[CoreAgent] Sending message to {msg.to}")
-            #network_mock.IMAGE_MESSAGE = msg
-            await self.send(msg)
-            print(f"[CoreAgent] Message sent to {msg.to}")
+            if(self.agent.imageReceived is not None):
+                img = cv2.imread(self.agent.imageReceived)
+                self.agent.imageReceived = None
+                _, img_encoded = cv2.imencode('.jpg', img)
+                img_bytes = img_encoded.tobytes()
+                img_str = base64.b64encode(img_bytes).decode()
+                msg = Message(to="image@localhost")
+                msg.body = img_str
+                msg.set_metadata("performative", "inform")
+                print(f"[CoreAgent] Sending message to {msg.to}")
+                #network_mock.IMAGE_MESSAGE = msg
+                await self.send(msg)
+                print(f"[CoreAgent] Message sent to {msg.to}")
 
     async def setup(self):
         print("CoreAgent started")
@@ -79,25 +93,5 @@ class CoreAgent(Agent):
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             print("Image is empty")
-            return
-        asyncio.run(self.process_image(img))
-
-    def publish_ad(self, ad_path):
-        client = mqtt.Client('Display')
-        client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        client.publish(self.display_topic, ad_path)
-        print(ad_path)
-        client.disconnect()
-
-    #def run(self):
-        # Get the demographic data from the Image Processing Agent
-    #    img = cv2.imread(self.img_path)
-    #    demographic_data = self.imageProcessingAgent.process_image(img)
-    #    winning_ad = self.decisionMakingAgent.auction(demographic_data)
-
-        #image_test = 'test_image_ad.jpg'
-        #video_test = 'test_video_ad.mp4'
-   #     if winning_ad.split('.')[-1] in ['jpeg', 'jpg', 'png']:
-   #         self.displayAgent.display_image('ads/'+winning_ad)
-   #     elif winning_ad.split('.')[-1] in ['avi', 'mp4']:
-   #         self.displayAgent.display_video('ads/'+winning_ad)
+        else:
+            self.image_received = img

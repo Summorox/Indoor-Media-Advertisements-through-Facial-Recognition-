@@ -10,7 +10,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 import spade
-import network_mock
+import network_config
 
 
 class ImageProcessingAgent(Agent):

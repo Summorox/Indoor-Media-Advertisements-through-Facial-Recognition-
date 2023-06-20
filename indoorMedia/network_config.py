@@ -1,2 +1,3 @@
 IMAGE_MESSAGE = None
 DEMOGRAPHICS_MESSAGE= None
+SERVER ='@localhost'
