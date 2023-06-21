@@ -4,7 +4,7 @@ import time
 import network_config
 from AdvertisingAgent import AdvertisingAgent
 from CoreAgent import CoreAgent
-from DecisionMakingAgent import DecisionMakingAgent
+from AuctionAgent import AuctionAgent
 from DisplayAgent import DisplayAgent
 from ImageProcessingAgent import ImageProcessingAgent
 
@@ -26,13 +26,13 @@ model_paths = {
 ad_agents = ["gender", "age", "age_gender"]
 
 
-imageAgent = ImageProcessingAgent(model_paths, "image"+network_config.SERVER, "password")
+imageAgent = ImageProcessingAgent(model_paths, "image"+network_config.SERVER, "image")
 
-coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core"+network_config.SERVER, "password")
+coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core"+network_config.SERVER, "core")
 
-auctionAgent = DecisionMakingAgent("auction"+network_config.SERVER, "password", ad_agents)
+auctionAgent = AuctionAgent("auction" + network_config.SERVER, "auction", ad_agents)
 
-displayAgent = DisplayAgent("display"+network_config.SERVER, "password")
+displayAgent = DisplayAgent("display"+network_config.SERVER, "display")
 
 advertising_agents = []
 for i, characteristic in enumerate(ad_agents):
@@ -54,18 +54,14 @@ async def stopAgents():
 async def runAgents():
     future_image = imageAgent.start()
     await future_image  # Wait for future_image to complete before starting the coreAgent
-    time.sleep(2)
     future_auction = auctionAgent.start()
     await future_auction
-    for agent in advertising_agents:
-        time.sleep(2)
-        future_advertising = agent.start()
-        await future_advertising
-    time.sleep(2)
     future_display = displayAgent.start()
     await  future_display
-    time.sleep(2)
+    for agent in advertising_agents:
+        future_advertising = agent.start()
+        await future_advertising
     future_core = coreAgent.start()
     await future_core
 
-asyncio.run(runAgents())
+asyncio.run(stopAgents())

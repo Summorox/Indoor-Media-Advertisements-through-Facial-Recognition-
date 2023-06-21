@@ -12,7 +12,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 
-from DecisionMakingAgent import DecisionMakingAgent
+from AuctionAgent import AuctionAgent
 from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
 import network_config
@@ -27,52 +27,63 @@ class CoreAgent(Agent):
         self.tracing = True
         self.imageReceived = None
 
-    class ReceiveBehaviour(CyclicBehaviour):
+    class ReceiveImageBehaviour(CyclicBehaviour):
         async def run(self):
-            #msg = network_mock.DEMOGRAPHICS_MESSAGE
-            msg = await self.receive()
+            msg = network_config.IMAGE_CORE_MESSAGE
+            #msg = await self.receive()
             if msg:
-                if("image"+network_config.SERVER ==str(msg.sender)):
-                    #network_mock.DEMOGRAPHICS_MESSAGE= None
-                    print('test')
-                    demographic_data = json.loads(msg.body)
-                    # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
-                    print(demographic_data)
-                    msgAuction = Message(to="auctiont"+network_config.SERVER)
-                    msgAuction.body = json.dumps(demographic_data)
-                    msgAuction.set_metadata("performative", "inform")
-                    await self.send(msgAuction)
-                elif("auction"+network_config.SERVER == str(msg.sender)):
-                    winning_ad = msg.body
-                    msgDisplay = Message(to="display"+network_config.SERVER)
-                    print(winning_ad)
-                    msgDisplay.body =winning_ad
-                    msgDisplay.set_metadata("performative", "inform")
-                    await self.send(msgDisplay)
-    class RequestBehaviour(CyclicBehaviour):
+                print(f"[CoreAgent] Received Message")
+                network_config.IMAGE_CORE_MESSAGE= None
+                demographic_data = json.loads(msg.body)
+                # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
+                msgAuction = Message(to="auctiont"+network_config.SERVER)
+                msgAuction.body = json.dumps(demographic_data)
+                msgAuction.set_metadata("performative", "inform")
+                print(f"[CoreAgent] Sending message to {msgAuction.to}")
+                network_config.CORE_AUCTION_MESSAGE = msgAuction
+                #await self.send(msgAuction)
+    class ReceiveAdBehaviour(CyclicBehaviour):
         async def run(self):
-            if(self.agent.imageReceived is not None):
-                img = cv2.imread(self.agent.imageReceived)
-                self.agent.imageReceived = None
+            msg = network_config.AUCTION_CORE_MESSAGE
+            #msg = await self.receive()
+            if msg:
+                network_config.AUCTION_CORE_MESSAGE = None
+                print(f"[CoreAgent] Received Message")
+                winning_ad = msg.body
+                msgDisplay = Message(to="display"+network_config.SERVER)
+                print(winning_ad)
+                msgDisplay.body =winning_ad
+                msgDisplay.set_metadata("performative", "inform")
+                print(f"[CoreAgent] Sending message to {msgDisplay.to}")
+                network_config.CORE_DISPLAY_MESSAGE = msgDisplay
+                #await self.send(msgDisplay)
+    class RequestImageBehaviour(OneShotBehaviour):
+        async def run(self):
+            #if(self.agent.imageReceived is not None):
+                #img = cv2.imread(self.agent.imageReceived)
+                #self.agent.imageReceived = None
+                img = cv2.imread(self.agent.img_path)
                 _, img_encoded = cv2.imencode('.jpg', img)
                 img_bytes = img_encoded.tobytes()
                 img_str = base64.b64encode(img_bytes).decode()
-                msg = Message(to="image@localhost")
+                msg = Message(to="image"+network_config.SERVER)
                 msg.body = img_str
                 msg.set_metadata("performative", "inform")
                 print(f"[CoreAgent] Sending message to {msg.to}")
-                #network_mock.IMAGE_MESSAGE = msg
-                await self.send(msg)
+                network_config.CORE_IMAGE_MESSAGE = msg
+                #await self.send(msg)
                 print(f"[CoreAgent] Message sent to {msg.to}")
 
     async def setup(self):
         print("CoreAgent started")
-        receive_behaviour = self.ReceiveBehaviour()
-        request_behaviour = self.RequestBehaviour()
+        receive_image_behaviour = self.ReceiveImageBehaviour()
+        request_image_behaviour = self.RequestImageBehaviour()
+        receive_ad_behaviour = self.ReceiveAdBehaviour()
         template = Template()
         template.set_metadata("performative", "inform")
-        self.add_behaviour(receive_behaviour,template)
-        self.add_behaviour(request_behaviour,template)
+        self.add_behaviour(receive_image_behaviour,template)
+        self.add_behaviour(request_image_behaviour,template)
+        self.add_behaviour(receive_ad_behaviour,template)
         #self.client = mqtt.Client("Core")
         #self.client.on_connect = self.on_connect
         #self.client.on_message = self.on_message

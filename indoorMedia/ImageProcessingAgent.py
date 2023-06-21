@@ -20,10 +20,10 @@ class ImageProcessingAgent(Agent):
         self.tracing = True
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
-            #msg = network_mock.IMAGE_MESSAGE
-            msg = await self.receive()
+            msg = network_config.CORE_IMAGE_MESSAGE
+            #msg = await self.receive()
             if msg:
-                #network_mock.IMAGE_MESSAGE = None
+                network_config.CORE_IMAGE_MESSAGE = None
                 print("[ImageProcessingAgent] Received a message")
                 img_bytes = base64.b64decode(msg.body)
                 nparr = np.frombuffer(img_bytes, np.uint8)
@@ -32,11 +32,12 @@ class ImageProcessingAgent(Agent):
                     print("Image is empty")
                     return
                 demographic_data = await self.agent.process_image(img)
-                msg = Message(to='core@localhost')
+                msg = Message(to='core'+network_config.SERVER)
                 msg.body = json.dumps(demographic_data)
                 msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
-                #network_mock.DEMOGRAPHICS_MESSAGE = msg
-                await self.send(msg)
+                print(f"[ImageProcessingAgent] Sending message to {msg.to}")
+                network_config.IMAGE_CORE_MESSAGE = msg
+                #await self.send(msg)
     async def setup(self):
         self.frame_width, self.frame_height = 1280, 720
         self.age_net = cv2.dnn.readNetFromCaffe(self.model_paths['age_proto'], self.model_paths['age_model'])

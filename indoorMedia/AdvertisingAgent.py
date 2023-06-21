@@ -1,9 +1,13 @@
+import asyncio
 import json
+import time
 
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
+
+import network_config
 
 
 class AdvertisingAgent(Agent):
@@ -12,35 +16,44 @@ class AdvertisingAgent(Agent):
         self.characteristic = characteristic
         with open('ads_database.json', 'r') as f:
             self.ads_database = json.load(f)
-
-        self.ad_proposal_behaviour = None
-
     class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            if msg:
-                demographic_data = json.loads(msg.body)
-                for data in demographic_data:
-                    age_range = list(map(int, data['age'].strip('()').split(', ')))
-                    if self.agent.characteristic == 'gender':
-                        filtered_ads = [ad for ad in self.agent.ads_database if
-                                        ad['gender'] == data['gender'] and ad['age'] == 'Empty']
-                    elif self.agent.characteristic == 'age':
-                        filtered_ads = [ad for ad in self.agent.ads_database if
-                                        ad['age'] == age_range and ad['gender'] == 'Empty']
-                    elif self.agent.characteristic =="age_gender":
-                        filtered_ads = [ad for ad in self.agent.ads_database if
-                                        ad['gender'] == data['gender'] and ad['age'] == age_range]
-
-                    if filtered_ads:
-                        ad_info = max(filtered_ads, key=lambda x: x['money_to_display'])
-                        num_people = len(
-                            [d for d in demographic_data if d['gender'] == data['gender'] and d['age'] == data['age']])
-                        bid = ad_info['money_to_display'] * num_people
-
-                        response_msg = Message(to=msg.sender)
-                        response_msg.body = json.dumps((ad_info['ad_file'], bid))
-                        await self.send(response_msg)
+            for i, characteristic in enumerate(['gender', 'age', 'age_gender']):
+                max_bid = 0
+                max_ad_info = None
+                if self.agent.characteristic == characteristic and network_config.AD_MESSAGES[i]:  # if list not empty
+                    msg = network_config.AD_MESSAGES[i].pop(0)  # pop the first message
+                    # msg = await self.receive()
+                    print("[AdvertisingAgent]" + self.agent.characteristic + " Received a message")
+                    demographic_data = json.loads(msg.body)
+                    for data in demographic_data:
+                        age_range = list(map(int, data['age'].strip('()').split(', ')))
+                        if self.agent.characteristic == 'gender':
+                            filtered_ads = [ad for ad in self.agent.ads_database if
+                                            ad['gender'] == data['gender'] and ad['age'] == 'Empty']
+                            network_config.AD_MESSAGES[0] = None
+                        elif self.agent.characteristic == 'age':
+                            filtered_ads = [ad for ad in self.agent.ads_database if
+                                            ad['age'] == age_range and ad['gender'] == 'Empty']
+                            network_config.AD_MESSAGES[1] = None
+                        elif self.agent.characteristic == "age_gender":
+                            filtered_ads = [ad for ad in self.agent.ads_database if
+                                            ad['gender'] == data['gender'] and ad['age'] == age_range]
+                            network_config.AD_MESSAGES[2] = None
+                        if filtered_ads:
+                            ad_info = max(filtered_ads, key=lambda x: x['money_to_display'])
+                            num_people = len(
+                                [d for d in demographic_data if
+                                 d['gender'] == data['gender'] and d['age'] == data['age']])
+                            bid = ad_info['money_to_display'] * num_people
+                            if bid > max_bid:
+                                max_bid = bid
+                                max_ad_info = ad_info
+                if max_ad_info is not None:
+                    response_msg = Message(to='auction' + network_config.SERVER)
+                    response_msg.body = json.dumps((max_ad_info['ad_file'], max_bid))
+                    network_config.AD_BIDS_MESSAGES[i].append(response_msg)
+                    #await self.send(response_msg)
 
     async def setup(self):
         print(f"AdvertisingAgent {self.jid.localpart} started")
