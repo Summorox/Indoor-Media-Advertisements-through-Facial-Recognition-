@@ -22,7 +22,7 @@ class DisplayAgent(Agent):
                 print(f"[DisplayAgent] Received Message")
                 network_config.CORE_DISPLAY_MESSAGE = None
                 ad_path = msg.body
-                stripped_path = "\"zara_dress15.png\""
+                stripped_path = "\""+ad_path+"\""
                 stripped_path = stripped_path.strip("\"")
                 self.agent.display_ad(network_config.ADS_PATH+stripped_path)
 

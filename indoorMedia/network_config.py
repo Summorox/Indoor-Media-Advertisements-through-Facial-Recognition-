@@ -8,4 +8,5 @@ AUCTION_CORE_MESSAGE= None
 AD_MESSAGES = [[] for _ in range(3)]
 AD_BIDS_MESSAGES = [[] for _ in range(3)]
 SERVER ='@localhost'
+IMG_MESSAGE = None
 ADS_PATH = 'ads/'

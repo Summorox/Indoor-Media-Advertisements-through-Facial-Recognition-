@@ -31,15 +31,12 @@ class AdvertisingAgent(Agent):
                         if self.agent.characteristic == 'gender':
                             filtered_ads = [ad for ad in self.agent.ads_database if
                                             ad['gender'] == data['gender'] and ad['age'] == 'Empty']
-                            network_config.AD_MESSAGES[0] = None
                         elif self.agent.characteristic == 'age':
                             filtered_ads = [ad for ad in self.agent.ads_database if
                                             ad['age'] == age_range and ad['gender'] == 'Empty']
-                            network_config.AD_MESSAGES[1] = None
                         elif self.agent.characteristic == "age_gender":
                             filtered_ads = [ad for ad in self.agent.ads_database if
                                             ad['gender'] == data['gender'] and ad['age'] == age_range]
-                            network_config.AD_MESSAGES[2] = None
                         if filtered_ads:
                             ad_info = max(filtered_ads, key=lambda x: x['money_to_display'])
                             num_people = len(

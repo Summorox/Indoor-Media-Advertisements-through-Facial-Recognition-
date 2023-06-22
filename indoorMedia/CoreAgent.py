@@ -1,5 +1,6 @@
 import asyncio
 import json
+import time
 from io import BytesIO
 
 import cv2
@@ -35,7 +36,6 @@ class CoreAgent(Agent):
                 print(f"[CoreAgent] Received Message")
                 network_config.IMAGE_CORE_MESSAGE= None
                 demographic_data = json.loads(msg.body)
-                # winning_ad = 'ads/' + self.decisionMakingAgent.auction(demographic_data)
                 msgAuction = Message(to="auctiont"+network_config.SERVER)
                 msgAuction.body = json.dumps(demographic_data)
                 msgAuction.set_metadata("performative", "inform")
@@ -57,15 +57,16 @@ class CoreAgent(Agent):
                 print(f"[CoreAgent] Sending message to {msgDisplay.to}")
                 network_config.CORE_DISPLAY_MESSAGE = msgDisplay
                 #await self.send(msgDisplay)
-    class RequestImageBehaviour(OneShotBehaviour):
+    class RequestImageBehaviour(CyclicBehaviour):
         async def run(self):
-            #if(self.agent.imageReceived is not None):
-                #img = cv2.imread(self.agent.imageReceived)
-                #self.agent.imageReceived = None
-                img = cv2.imread(self.agent.img_path)
-                _, img_encoded = cv2.imencode('.jpg', img)
+            image = network_config.IMG_MESSAGE
+            if(image is not None):
+                network_config.IMG_MESSAGE = None
+                #img = cv2.imread(self.agent.img_path)
+                _, img_encoded = cv2.imencode('.jpg', image)
                 img_bytes = img_encoded.tobytes()
                 img_str = base64.b64encode(img_bytes).decode()
+                cv2.imwrite("capturar.png",image)
                 msg = Message(to="image"+network_config.SERVER)
                 msg.body = img_str
                 msg.set_metadata("performative", "inform")
@@ -84,11 +85,11 @@ class CoreAgent(Agent):
         self.add_behaviour(receive_image_behaviour,template)
         self.add_behaviour(request_image_behaviour,template)
         self.add_behaviour(receive_ad_behaviour,template)
-        #self.client = mqtt.Client("Core")
-        #self.client.on_connect = self.on_connect
-        #self.client.on_message = self.on_message
-        #self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        #self.client.loop_start()
+        self.client = mqtt.Client("Core")
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))
@@ -105,4 +106,5 @@ class CoreAgent(Agent):
         if img is None:
             print("Image is empty")
         else:
-            self.image_received = img
+            print("Received image")
+            network_config.IMG_MESSAGE = img

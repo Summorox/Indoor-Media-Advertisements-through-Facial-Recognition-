@@ -20,7 +20,7 @@ class AuctionAgent(Agent):
     class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
             msg = network_config.CORE_AUCTION_MESSAGE
-            #msg = await self.receive(timeout=10)
+            #msg = await self.receive()
             if msg:
                 print("[AuctionAgent] Received a message")
                 network_config.CORE_AUCTION_MESSAGE = None

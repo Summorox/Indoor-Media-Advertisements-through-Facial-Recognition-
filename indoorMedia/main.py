@@ -62,6 +62,20 @@ async def runAgents():
         future_advertising = agent.start()
         await future_advertising
     future_core = coreAgent.start()
+    future_core2 = coreAgent.web.start(hostname="127.0.0.1",port="10000")
     await future_core
+    await future_core2
 
-asyncio.run(stopAgents())
+asyncio.run(runAgents())
+
+while True:
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt:
+        break
+coreAgent.stop()
+imageAgent.stop()
+auctionAgent.stop()
+displayAgent.stop()
+for agent in advertising_agents:
+    agent.stop()
