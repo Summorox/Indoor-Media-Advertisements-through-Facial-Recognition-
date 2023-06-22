@@ -31,24 +31,6 @@ class AuctionAgent(Agent):
                     network_config.AD_MESSAGES[i].append(message)
                     #await self.send(message)
 
-                """max_bid = 0
-                winning_ad = None
-                for i, _ in enumerate(self.agent.ad_agents):
-                    if network_config.AD_BIDS_MESSAGES[i]:  # if list not empty
-                        msg = network_config.AD_BIDS_MESSAGES[i].pop(0)  # pop the first messagepop the first message
-                        #msg = await self.receive(timeout=60)  # wait for all responses
-                        if msg:
-                            ad, bid = json.loads(msg.body)
-                            print("Reached Here")
-                            if bid > max_bid:
-                                max_bid = bid
-                                winning_ad = ad
-                        #network_config.AD_MESSAGES[i] = None
-
-                print('WINNING AD')
-                print(max_bid)
-                print(winning_ad)"""
-
     class ReceiveAdsBehaviour(CyclicBehaviour):
         async def run(self):
             max_bid = 0
@@ -85,27 +67,3 @@ class AuctionAgent(Agent):
         self.add_behaviour(receiveAdsBehaviour, template)
 
 
-    """def auction(self, demographic_data):
-        threads = []
-        for agent in self.advertisingAgents:
-            thread = threading.Thread(target=agent.propose_ad, args=(demographic_data, self.ads_queue))
-            thread.start()
-            threads.append(thread)
-
-        for thread in threads:
-            thread.join()
-
-        return self.choose_ad()
-
-    def choose_ad(self):
-        max_bid = 0
-        winning_ad = None
-        while not self.ads_queue.empty():
-            ad, bid = self.ads_queue.get()
-            if bid > max_bid:
-                max_bid = bid
-                winning_ad = ad
-        print('WINNING AD')
-        print(max_bid)
-        print(winning_ad)
-        return winning_ad """

@@ -32,12 +32,15 @@ class ImageProcessingAgent(Agent):
                     print("Image is empty")
                     return
                 demographic_data = await self.agent.process_image(img)
-                msg = Message(to='core'+network_config.SERVER)
-                msg.body = json.dumps(demographic_data)
-                msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
-                print(f"[ImageProcessingAgent] Sending message to {msg.to}")
-                network_config.IMAGE_CORE_MESSAGE = msg
-                #await self.send(msg)
+                if demographic_data:
+                    msg = Message(to='core' + network_config.SERVER)
+                    msg.body = json.dumps(demographic_data)
+                    msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
+                    print(f"[ImageProcessingAgent] Sending message to {msg.to}")
+                    network_config.IMAGE_CORE_MESSAGE = msg
+                    # await self.send(msg)
+                else:
+                    print("[ImageProcessingAgent] No faces detected in the image, not sending message")
     async def setup(self):
         self.frame_width, self.frame_height = 1280, 720
         self.age_net = cv2.dnn.readNetFromCaffe(self.model_paths['age_proto'], self.model_paths['age_model'])

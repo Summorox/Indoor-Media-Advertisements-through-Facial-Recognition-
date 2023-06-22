@@ -42,33 +42,3 @@ class DisplayAgent(Agent):
         if response.status_code != 200:
             print(f"Failed to send ad to display service: {response.text}")
 
-    """def display_ad(self, ad_path):
-        if ad_path.split('.')[-1] in ['jpeg', 'jpg', 'png']:
-            self.display_image(ad_path)
-        elif ad_path.split('.')[-1] in ['avi', 'mp4']:
-            self.display_video(ad_path)
-    def display_image(self, img_path):
-        img = cv2.imread(img_path)
-        if img is None:
-            print(f"Could not open or find the image: {img_path}")
-            return
-        print('test')
-        cv2.imshow('Advertisement', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-    def display_video(self, video_path):
-        cap = cv2.VideoCapture(video_path)
-        if cap is None:
-            print(f"Could not open or find the video: {video_path}")
-            return
-        while (cap.isOpened()):
-            ret, frame = cap.read()
-            if ret:
-                cv2.imshow('Advertisement', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-            else:
-                break
-        cap.release()
-        cv2.destroyAllWindows()"""
