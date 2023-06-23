@@ -2,7 +2,7 @@ import asyncio
 import time
 
 import network_config
-from AdvertisingAgent import AdvertisingAgent
+from AuctionParticipantAgent import AuctionParticipantAgent
 from CoreAgent import CoreAgent
 from AuctionAgent import AuctionAgent
 from DisplayAgent import DisplayAgent
@@ -36,7 +36,7 @@ displayAgent = DisplayAgent("display"+network_config.SERVER, "display")
 
 advertising_agents = []
 for i, characteristic in enumerate(ad_agents):
-    agent = AdvertisingAgent(f"{characteristic}"+network_config.SERVER, "password", characteristic)
+    agent = AuctionParticipantAgent(f"{characteristic}" + network_config.SERVER, "password", characteristic)
     advertising_agents.append(agent)
 
 async def stopAgents():

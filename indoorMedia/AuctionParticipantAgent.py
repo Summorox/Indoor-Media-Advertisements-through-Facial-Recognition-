@@ -10,7 +10,7 @@ from spade.template import Template
 import network_config
 
 
-class AdvertisingAgent(Agent):
+class AuctionParticipantAgent(Agent):
     def __init__(self, jid, password, characteristic):
         super().__init__(jid, password)
         self.characteristic = characteristic
@@ -24,7 +24,7 @@ class AdvertisingAgent(Agent):
                 if self.agent.characteristic == characteristic and network_config.AD_MESSAGES[i]:  # if list not empty
                     msg = network_config.AD_MESSAGES[i].pop(0)  # pop the first message
                     # msg = await self.receive()
-                    print("[AdvertisingAgent]" + self.agent.characteristic + " Received a message")
+                    print("[AuctionParticipantAgent]" + self.agent.characteristic + " Received a message")
                     demographic_data = json.loads(msg.body)
                     for data in demographic_data:
                         age_range = list(map(int, data['age'].strip('()').split(', ')))
@@ -53,7 +53,7 @@ class AdvertisingAgent(Agent):
                     #await self.send(response_msg)
 
     async def setup(self):
-        print(f"AdvertisingAgent {self.jid.localpart} started")
+        print(f"AuctionParticipantAgent {self.jid.localpart} started")
         receiveBehaviour = self.ReceiveBehaviour()
         template = Template()
         template.set_metadata("performative", "inform")

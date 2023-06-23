@@ -9,7 +9,7 @@ from spade.message import Message
 from spade.template import Template
 
 import network_config
-from AdvertisingAgent import AdvertisingAgent
+from AuctionParticipantAgent import AuctionParticipantAgent
 
 
 class AuctionAgent(Agent):
