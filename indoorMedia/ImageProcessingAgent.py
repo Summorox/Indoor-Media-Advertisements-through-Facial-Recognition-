@@ -10,7 +10,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 import spade
-import network_mock
+import network_config
 
 
 class ImageProcessingAgent(Agent):
@@ -20,10 +20,11 @@ class ImageProcessingAgent(Agent):
         self.tracing = True
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
-            #msg = network_mock.IMAGE_MESSAGE
-            msg = await self.receive()
+            msg = network_config.CORE_IMAGE_MESSAGE
+            #msg = await self.receive(timeout=10)
             if msg:
-                #network_mock.IMAGE_MESSAGE = None
+                network_config.CORE_IMAGE_MESSAGE = None
+                print(msg)
                 print("[ImageProcessingAgent] Received a message")
                 img_bytes = base64.b64decode(msg.body)
                 nparr = np.frombuffer(img_bytes, np.uint8)
@@ -32,12 +33,18 @@ class ImageProcessingAgent(Agent):
                     print("Image is empty")
                     return
                 demographic_data = await self.agent.process_image(img)
-                msg = Message(to='core@localhost')
-                msg.body = json.dumps(demographic_data)
-                msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
-                #network_mock.DEMOGRAPHICS_MESSAGE = msg
-                await self.send(msg)
+                if demographic_data:
+                    print(demographic_data)
+                    msg = Message(to='core' + network_config.SERVER)
+                    msg.body = json.dumps(demographic_data)
+                    msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
+                    print(f"[ImageProcessingAgent] Sending message to {msg.to}")
+                    network_config.IMAGE_CORE_MESSAGE = msg
+                    #await self.send(msg)
+                else:
+                    print("[ImageProcessingAgent] No faces detected in the image, not sending message")
     async def setup(self):
+        print("ImageProcessingAgent started 1")
         self.frame_width, self.frame_height = 1280, 720
         self.age_net = cv2.dnn.readNetFromCaffe(self.model_paths['age_proto'], self.model_paths['age_model'])
         self.face_net = cv2.dnn.readNetFromCaffe(self.model_paths['face_proto'], self.model_paths['face_model'])
@@ -48,7 +55,7 @@ class ImageProcessingAgent(Agent):
                               '(25, 32)', '(38, 43)', '(48, 53)', '(60, 100)']
         self.GENDER_LIST = ['Male', 'Female']
 
-        print("ImageProcessingAgent started")
+        print("ImageProcessingAgent started 2")
         receiveBehaviour = self.ReceiveBehaviour()
         template = Template()
         template.set_metadata("performative", "inform")

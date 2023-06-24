@@ -1,52 +1,44 @@
+import json
+
 import cv2
-import paho.mqtt.client as mqtt
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour
+from spade.template import Template
+import requests
 
-class DisplayAgent:
+import network_config
 
-    def __init__(self, mqtt_broker, mqtt_port, mqtt_topic):
-        self.client = mqtt.Client("Display2")
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
 
-        self.mqtt_broker = mqtt_broker
-        self.mqtt_port = mqtt_port
-        self.mqtt_topic = mqtt_topic
+class DisplayAgent(Agent):
 
-    def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code " + str(rc))
-        client.subscribe(self.mqtt_topic)
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
 
-    def on_message(self, client, userdata, msg):
-        ad_path = msg.payload.decode()
-        print(ad_path)# Decode the message payload
-        self.display_ad(ad_path)
+    class ReceiveBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = network_config.CORE_DISPLAY_MESSAGE
+            #msg = await self.receive()
+            if msg:
+                print(f"[DisplayAgent] Received Message")
+                network_config.CORE_DISPLAY_MESSAGE = None
+                ad_path = msg.body
+                stripped_path = "\""+ad_path+"\""
+                stripped_path = stripped_path.strip("\"")
+                self.agent.display_ad(network_config.ADS_PATH+stripped_path)
 
-    def display_image(self, img_path):
-        img = cv2.imread(img_path)
-        cv2.imshow('Advertisement', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-    def display_video(self, video_path):
-        cap = cv2.VideoCapture(video_path)
-
-        while (cap.isOpened()):
-            ret, frame = cap.read()
-            if ret:
-                cv2.imshow('Advertisement', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-            else:
-                break
-        cap.release()
-        cv2.destroyAllWindows()
+    async def setup(self):
+        print("DisplayAgent started")
+        receiveBehaviour = self.ReceiveBehaviour()
+        template = Template()
+        template.set_metadata("performative", "inform")
+        self.add_behaviour(receiveBehaviour, template)
 
     def display_ad(self, ad_path):
-        if ad_path.split('.')[-1] in ['jpeg', 'jpg', 'png']:
-            self.display_image(ad_path)
-        elif ad_path.split('.')[-1] in ['avi', 'mp4']:
-            self.display_video(ad_path)
+        print(ad_path)
+        display_service_url = 'http://localhost:50000/display'  # Replace with the actual URL of the display service
+        headers = {'Content-Type': 'application/json'}  # set Content-Type to application/json
+        data = json.dumps({'ad_path': ad_path})  # convert the data to a JSON string
+        response = requests.post(display_service_url, data=data, headers=headers)
+        if response.status_code != 200:
+            print(f"Failed to send ad to display service: {response.text}")
 
-    def run(self):
-        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        self.client.loop_forever()
