@@ -20,8 +20,8 @@ class ImageProcessingAgent(Agent):
         self.tracing = True
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
-            msg = network_config.CORE_IMAGE_MESSAGE
-            #msg = await self.receive(timeout=10)
+            #msg = network_config.CORE_IMAGE_MESSAGE
+            msg = await self.receive(timeout=5)
             if msg:
                 network_config.CORE_IMAGE_MESSAGE = None
                 print(msg)
@@ -35,12 +35,12 @@ class ImageProcessingAgent(Agent):
                 demographic_data = await self.agent.process_image(img)
                 if demographic_data:
                     print(demographic_data)
-                    msg = Message(to='core' + network_config.SERVER)
+                    msg = Message(to='im_core_agent' + network_config.SERVER)
                     msg.body = json.dumps(demographic_data)
                     msg.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
+                    
                     print(f"[ImageProcessingAgent] Sending message to {msg.to}")
-                    network_config.IMAGE_CORE_MESSAGE = msg
-                    #await self.send(msg)
+                    await self.send(msg)
                 else:
                     print("[ImageProcessingAgent] No faces detected in the image, not sending message")
     async def setup(self):

@@ -16,11 +16,10 @@ class DisplayAgent(Agent):
 
     class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = network_config.CORE_DISPLAY_MESSAGE
-            #msg = await self.receive()
+
+            msg = await self.receive()
             if msg:
                 print(f"[DisplayAgent] Received Message")
-                network_config.CORE_DISPLAY_MESSAGE = None
                 ad_path = msg.body
                 stripped_path = "\""+ad_path+"\""
                 stripped_path = stripped_path.strip("\"")
