@@ -16,6 +16,10 @@ class AuctionAgent(Agent):
     def __init__(self, jid, password, ad_agents):
         super().__init__(jid, password)
         self.ad_agents = ad_agents
+        self.current_winner = ''
+        self.current_winning_ad=''
+        self.current_winning_bid = 0
+        self.bids_counter = 0
 
     class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
@@ -31,29 +35,27 @@ class AuctionAgent(Agent):
 
     class ReceiveAdsBehaviour(CyclicBehaviour):
         async def run(self):
-            max_bid = 0
-            winning_ad = None
-            for i, agt in enumerate(self.agent.ad_agents):
-                #if network_config.AD_BIDS_MESSAGES[i]:  # if list not empty
-                    
-
-                msg = await self.receive()  # wait for all responses
-                if msg and (agt in str(msg.sender)):
-                    print("[AuctionAgent] Received a message")
-                    ad, bid = json.loads(msg.body)
-                    if bid > max_bid:
-                        max_bid = bid
-                        winning_ad = ad
-            #print('WINNING AD')
-            #print(max_bid)
-            #print(winning_ad)
-            if(winning_ad is not None):
-                msgAd = Message(to='im_core_agent' + network_config.SERVER)
-                msgAd.body = json.dumps(winning_ad)
-                msgAd.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
-                print(f"[AuctionAgent] Sending message to {msgAd.to}")
-                winning_ad = None
-                await self.send(msgAd)
+            msg = await self.receive()  # wait for a message for 5 seconds
+            if msg and ("core_agent" not in str(msg.sender)):
+                ad, bid = json.loads(msg.body)
+                print("[AuctionAgent] Received a message from" + str(msg.sender))
+                self.agent.bids_counter = self.agent.bids_counter + 1
+                if bid > self.agent.current_winning_bid:
+                    self.agent.current_winner = msg.sender
+                    self.agent.current_winning_ad = ad
+                    self.agent.current_winning_bid = bid
+                if self.agent.bids_counter >= len(self.agent.ad_agents):
+                    print('Agent '+str(self.agent.current_winner) +' is the WINNER with a bid of: ' +str(self.agent.current_winning_bid))
+                    print('Winning Ad: '+self.agent.current_winning_ad)
+                    msgAd = Message(to='im_core_agent' + network_config.SERVER)
+                    msgAd.body = json.dumps(self.agent.current_winning_ad)
+                    msgAd.set_metadata("performative", "inform")  
+                    print(f"[AuctionAgent] Sending message to {msgAd.to}")
+                    self.current_winner = ''
+                    self.current_winning_ad = ''
+                    self.current_winning_bid = 0
+                    self.bids_counter = 0
+                    await self.send(msgAd)
 
     async def setup(self):
         print("AuctionAgent started")
