@@ -58,7 +58,7 @@ class CoreAgent(Agent):
     #class RequestImageBehaviour(CyclicBehaviour):
     class RequestImageBehaviour(OneShotBehaviour):
         async def run(self):
-            #image = network_config.IMG_MESSAGE
+
             image = cv2.imread(self.agent.img_path)
             if(image is not None):
                 network_config.IMG_MESSAGE = None
@@ -89,9 +89,9 @@ class CoreAgent(Agent):
         self.client = mqtt.Client("Core")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        ##TODO remove the comment
-        #self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        #self.client.loop_start()
+
+        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))
