@@ -48,7 +48,7 @@ class CoreAgent(Agent):
                 print(f"[CoreAgent] Sending message to {msgDisplay.to}")
                 await self.send(msgDisplay)
 
-    #class RequestImageBehaviour(CyclicBehaviour):
+    class RequestImageBehaviour(CyclicBehaviour):
         async def run(self):
             image = network_config.IMG_MESSAGE
             #image = cv2.imread(self.agent.img_path)
