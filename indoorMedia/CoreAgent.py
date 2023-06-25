@@ -47,13 +47,13 @@ class CoreAgent(Agent):
                 
                 print(f"[CoreAgent] Sending message to {msgDisplay.to}")
                 await self.send(msgDisplay)
-    
-    class RequestImageBehaviour(CyclicBehaviour):
+
+    #class RequestImageBehaviour(CyclicBehaviour):
         async def run(self):
             image = network_config.IMG_MESSAGE
             #image = cv2.imread(self.agent.img_path)
             if(image is not None):
-                network_config.IMG_MESSAGE = None
+                
                 _, img_encoded = cv2.imencode('.jpg', image)
                 img_bytes = img_encoded.tobytes()
                 img_str = base64.b64encode(img_bytes).decode()

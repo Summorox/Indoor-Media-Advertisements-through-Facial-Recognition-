@@ -52,6 +52,7 @@ class AuctionParticipantAgent(Agent):
                     print("[AuctionParticipantAgent] sending message to Auction Agent")
                     response_msg = Message(to='im_auction_agent' + network_config.SERVER)
                     response_msg.body = json.dumps((max_ad_info['ad_file'], max_bid))
+                    response_msg.set_metadata("performative", "inform")
                     await self.send(response_msg)
 
     async def setup(self):

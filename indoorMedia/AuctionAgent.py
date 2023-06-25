@@ -30,7 +30,9 @@ class AuctionAgent(Agent):
                     await self.send(message)
 
     class ReceiveAdsBehaviour(CyclicBehaviour):
+        
         async def run(self):
+            
             msg = await self.receive()  # wait for a message for 5 seconds
             if msg and ("core_agent" not in str(msg.sender)):
                 ad, bid = json.loads(msg.body)
