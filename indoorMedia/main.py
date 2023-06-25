@@ -26,45 +26,46 @@ model_paths = {
 ad_agents = ["gender", "age", "age_gender"]
 
 
-imageAgent = ImageProcessingAgent(model_paths, "image"+network_config.SERVER, "image")
+imageAgent = ImageProcessingAgent(model_paths, "im_image_agent"+network_config.SERVER, "Spade123")
 
-coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "core"+network_config.SERVER, "core")
+coreAgent = CoreAgent(img_path,mqtt_broker, mqtt_port, mqtt_topic, "im_core_agent"+network_config.SERVER, "Spade123")
 
-auctionAgent = AuctionAgent("auction" + network_config.SERVER, "auction", ad_agents)
+auctionAgent = AuctionAgent("im_auction_agent" + network_config.SERVER, "Spade123", ad_agents)
 
-displayAgent = DisplayAgent("display"+network_config.SERVER, "display")
+displayAgent = DisplayAgent("im_display_agent"+network_config.SERVER, "Spade123")
 
 advertising_agents = []
 for i, characteristic in enumerate(ad_agents):
-    agent = AuctionParticipantAgent(f"{characteristic}" + network_config.SERVER, "password", characteristic)
+    agent = AuctionParticipantAgent("im_" + f"{characteristic}"+"_agent" + network_config.SERVER, "Spade123", characteristic)
     advertising_agents.append(agent)
 
 async def stopAgents():
     future_image = imageAgent.stop()
-    await future_image  # Wait for future_image to complete before starting the coreAgent
+    future_image.result()  # Wait for future_image to complete before starting the coreAgent
     future_core = coreAgent.stop()
-    await future_core
+    future_core.result()
     future_auction = auctionAgent.stop()
-    await future_auction
+    future_auction.result()
     for agent in advertising_agents:
-        await agent.stop()
+        agent.stop()
     future_display = displayAgent.stop()
-    await future_display
+    future_display.result()
 
 async def runAgents():
     future_image = imageAgent.start()
-    await future_image  # Wait for future_image to complete before starting the coreAgent
+    future_image.result()  # Wait for future_image to complete before starting the coreAgent
     future_auction = auctionAgent.start()
-    await future_auction
+    future_auction.result()
     future_display = displayAgent.start()
-    await  future_display
+    future_display.result()
     for agent in advertising_agents:
         future_advertising = agent.start()
-        await future_advertising
-    future_core = coreAgent.start()
-    future_core2 = coreAgent.web.start(hostname="127.0.0.1",port="10000")
-    await future_core
-    await future_core2
+        future_advertising.result()
+
+    coreAgent.start().result()
+    future_core = coreAgent.web.start(hostname="127.0.0.1",port="10000")
+    future_core.result()
+
 
 asyncio.run(runAgents())
 
@@ -73,9 +74,9 @@ while True:
         time.sleep(1)
     except KeyboardInterrupt:
         break
-coreAgent.stop()
-imageAgent.stop()
-auctionAgent.stop()
-displayAgent.stop()
+coreAgent.stop().result()
+imageAgent.stop().result()
+auctionAgent.stop().result()
+displayAgent.stop().result()
 for agent in advertising_agents:
-    agent.stop()
+    agent.stop().result()

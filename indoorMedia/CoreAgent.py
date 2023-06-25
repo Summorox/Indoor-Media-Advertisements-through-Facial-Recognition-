@@ -30,49 +30,48 @@ class CoreAgent(Agent):
 
     class ReceiveImageBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = network_config.IMAGE_CORE_MESSAGE
-            #msg = await self.receive()
-            if msg:
+            msg = await self.receive()
+            if msg and ('im_image_agent' in str(msg.sender)):
                 print(f"[CoreAgent] Received Message")
-                network_config.IMAGE_CORE_MESSAGE= None
+
                 demographic_data = json.loads(msg.body)
-                msgAuction = Message(to="auctiont"+network_config.SERVER)
+                msgAuction = Message(to="im_auction_agent"+network_config.SERVER)
                 msgAuction.body = json.dumps(demographic_data)
                 msgAuction.set_metadata("performative", "inform")
                 print(f"[CoreAgent] Sending message to {msgAuction.to}")
-                network_config.CORE_AUCTION_MESSAGE = msgAuction
-                #await self.send(msgAuction)
+
+                await self.send(msgAuction)
     class ReceiveAdBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = network_config.AUCTION_CORE_MESSAGE
-            #msg = await self.receive()
-            if msg:
-                network_config.AUCTION_CORE_MESSAGE = None
+            msg = await self.receive()
+            if msg and ('im_auction_agent' in str(msg.sender)):
                 print(f"[CoreAgent] Received Message")
                 winning_ad = msg.body
-                msgDisplay = Message(to="display"+network_config.SERVER)
+                msgDisplay = Message(to="im_display_agent"+network_config.SERVER)
                 print(winning_ad)
                 msgDisplay.body =winning_ad
                 msgDisplay.set_metadata("performative", "inform")
+                
                 print(f"[CoreAgent] Sending message to {msgDisplay.to}")
-                network_config.CORE_DISPLAY_MESSAGE = msgDisplay
-                #await self.send(msgDisplay)
-    class RequestImageBehaviour(CyclicBehaviour):
+                await self.send(msgDisplay)
+    
+    #class RequestImageBehaviour(CyclicBehaviour):
+    class RequestImageBehaviour(OneShotBehaviour):
         async def run(self):
-            image = network_config.IMG_MESSAGE
+            #image = network_config.IMG_MESSAGE
+            image = cv2.imread(self.agent.img_path)
             if(image is not None):
                 network_config.IMG_MESSAGE = None
-                #img = cv2.imread(self.agent.img_path)
                 _, img_encoded = cv2.imencode('.jpg', image)
                 img_bytes = img_encoded.tobytes()
                 img_str = base64.b64encode(img_bytes).decode()
                 cv2.imwrite("capturar.png",image)
-                msg = Message(to="image"+network_config.SERVER)
+                msg = Message(to="im_image_agent"+network_config.SERVER)
                 msg.body = img_str
                 msg.set_metadata("performative", "inform")
+
                 print(f"[CoreAgent] Sending message to {msg.to}")
-                network_config.CORE_IMAGE_MESSAGE = msg
-                #await self.send(msg)
+                await self.send(msg)
                 print(f"[CoreAgent] Message sent to {msg.to}")
 
     async def setup(self):
@@ -80,16 +79,19 @@ class CoreAgent(Agent):
         receive_image_behaviour = self.ReceiveImageBehaviour()
         request_image_behaviour = self.RequestImageBehaviour()
         receive_ad_behaviour = self.ReceiveAdBehaviour()
+        
         template = Template()
         template.set_metadata("performative", "inform")
         self.add_behaviour(receive_image_behaviour,template)
         self.add_behaviour(request_image_behaviour,template)
         self.add_behaviour(receive_ad_behaviour,template)
+
         self.client = mqtt.Client("Core")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        self.client.loop_start()
+        ##TODO remove the comment
+        #self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        #self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))

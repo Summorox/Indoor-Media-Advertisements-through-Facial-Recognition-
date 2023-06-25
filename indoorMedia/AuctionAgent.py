@@ -19,44 +19,41 @@ class AuctionAgent(Agent):
 
     class ReceiveBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = network_config.CORE_AUCTION_MESSAGE
-            #msg = await self.receive()
-            if msg:
+            msg = await self.receive()
+            if msg and ("core_agent" in str(msg.sender)):
                 print("[AuctionAgent] Received a message")
-                network_config.CORE_AUCTION_MESSAGE = None
                 demographic_data = json.loads(msg.body)
                 for i, ad_agent in enumerate(self.agent.ad_agents):
-                    message = Message(to=ad_agent + network_config.SERVER, body=msg.body)
+                    message = Message(to="im_"+ad_agent+"_agent" + network_config.SERVER, body=msg.body)
                     print(f"[AuctionAgent] Sending message to {message.to}")
-                    network_config.AD_MESSAGES[i].append(message)
-                    #await self.send(message)
+                    
+                    await self.send(message)
 
     class ReceiveAdsBehaviour(CyclicBehaviour):
         async def run(self):
             max_bid = 0
             winning_ad = None
-            for i, _ in enumerate(self.agent.ad_agents):
-                if network_config.AD_BIDS_MESSAGES[i]:  # if list not empty
+            for i, agt in enumerate(self.agent.ad_agents):
+                #if network_config.AD_BIDS_MESSAGES[i]:  # if list not empty
+                    
+
+                msg = await self.receive()  # wait for all responses
+                if msg and (agt in str(msg.sender)):
                     print("[AuctionAgent] Received a message")
-                    msg = network_config.AD_BIDS_MESSAGES[i].pop(0)  # pop the first messagepop the first message
-                    # msg = await self.receive(timeout=60)  # wait for all responses
-                    if msg:
-                        ad, bid = json.loads(msg.body)
-                        if bid > max_bid:
-                            max_bid = bid
-                            winning_ad = ad
+                    ad, bid = json.loads(msg.body)
+                    if bid > max_bid:
+                        max_bid = bid
+                        winning_ad = ad
             #print('WINNING AD')
             #print(max_bid)
             #print(winning_ad)
             if(winning_ad is not None):
-                msgAd = Message(to='core' + network_config.SERVER)
+                msgAd = Message(to='im_core_agent' + network_config.SERVER)
                 msgAd.body = json.dumps(winning_ad)
                 msgAd.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
                 print(f"[AuctionAgent] Sending message to {msgAd.to}")
-                print(winning_ad)
-                network_config.AUCTION_CORE_MESSAGE = msgAd
                 winning_ad = None
-                #await self.send(msgSend)
+                await self.send(msgAd)
 
     async def setup(self):
         print("AuctionAgent started")
