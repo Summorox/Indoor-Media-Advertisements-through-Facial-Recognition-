@@ -2,9 +2,9 @@
 #include <PubSubClient.h>
 
 //MQTT module
-const char *ssid = "NOTEVITORIA";//"Plumes Casa";//"Rede";//"IoT";
-const char *password = "123vba456";//"PlumesCasa";//"12345678";//"iot#123.";
-const char* mqtt_server = "192.168.137.1"; //195mqtt server IP address
+const char *ssid = "NOTEVITORIA";//"Rede";//"IoT";
+const char *password = "123vba456";//"12345678";//"iot#123.";
+const char* mqtt_server = "192.168.137.1"; //195-mqtt server IP address
 const char* mqtt_topic = "MOTION/DETECTION";
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -73,7 +73,7 @@ void loop(){
     Serial.println("Motion detected!\n");
     client.publish(mqtt_topic, "on");
     //digitalWrite(LED_PIN,HIGH);
-    delay(10000);
+    delay(15000);
   
   }
   else{
