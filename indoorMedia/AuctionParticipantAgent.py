@@ -48,6 +48,9 @@ class AuctionParticipantAgent(Agent):
                                 max_ad_info = ad_info
                 if max_ad_info is not None:
                     response_msg = Message(to='auction' + network_config.SERVER)
+                    print(self.agent.characteristic)
+                    print(max_ad_info['ad_file'])
+                    print(max_bid)
                     response_msg.body = json.dumps((max_ad_info['ad_file'], max_bid))
                     network_config.AD_BIDS_MESSAGES[i].append(response_msg)
                     #await self.send(response_msg)

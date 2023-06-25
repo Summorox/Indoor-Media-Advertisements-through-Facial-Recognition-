@@ -53,6 +53,7 @@ class AuctionAgent(Agent):
                 msgAd.body = json.dumps(winning_ad)
                 msgAd.set_metadata("performative", "inform")  # Set the "inform" FIPA performative
                 print(f"[AuctionAgent] Sending message to {msgAd.to}")
+                print(winning_ad)
                 network_config.AUCTION_CORE_MESSAGE = msgAd
                 winning_ad = None
                 #await self.send(msgSend)

@@ -13,7 +13,7 @@ mqtt_port = 1883
 mqtt_topic = 'PICTURE'
 
 #img_path=''
-img_path = 'happy-friends-from-different-races-culture-laughing_166273-465.jpg'
+img_path = '1Female_Child.jpg'
 model_paths = {
             'face_proto': 'deployproto.prototxt',
             'face_model': 'res10_300x300_ssd_iter_140000_fp16.caffemodel',
