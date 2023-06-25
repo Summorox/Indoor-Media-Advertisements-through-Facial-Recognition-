@@ -1,7 +1,4 @@
 import json
-import threading
-import time
-from queue import Queue
 
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
@@ -9,7 +6,6 @@ from spade.message import Message
 from spade.template import Template
 
 import network_config
-from AuctionParticipantAgent import AuctionParticipantAgent
 
 
 class AuctionAgent(Agent):

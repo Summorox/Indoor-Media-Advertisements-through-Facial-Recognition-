@@ -21,7 +21,7 @@ class AuctionParticipantAgent(Agent):
             for i, characteristic in enumerate(['gender', 'age', 'age_gender']):
                 max_bid = 0
                 max_ad_info = None
-                if self.agent.characteristic == characteristic: # and network_config.AD_MESSAGES[i]:  # if list not empty
+                if self.agent.characteristic == characteristic:
                     
                     msg = await self.receive()
                     if msg:

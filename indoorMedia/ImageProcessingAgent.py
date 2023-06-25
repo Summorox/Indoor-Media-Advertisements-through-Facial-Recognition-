@@ -3,10 +3,7 @@ import json
 
 import cv2
 import numpy as np
-import paho.mqtt.client as mqtt
-from spade.behaviour import OneShotBehaviour
 from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 import spade
@@ -20,10 +17,8 @@ class ImageProcessingAgent(Agent):
         self.tracing = True
     class ReceiveBehaviour(spade.behaviour.CyclicBehaviour):
         async def run(self):
-            #msg = network_config.CORE_IMAGE_MESSAGE
             msg = await self.receive(timeout=5)
             if msg:
-                network_config.CORE_IMAGE_MESSAGE = None
                 print(msg)
                 print("[ImageProcessingAgent] Received a message")
                 img_bytes = base64.b64decode(msg.body)

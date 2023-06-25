@@ -1,20 +1,13 @@
-import asyncio
 import json
-import time
-from io import BytesIO
 
 import cv2
 import base64
 import numpy as np
-import spade
-from spade.behaviour import OneShotBehaviour
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 
-from AuctionAgent import AuctionAgent
-from ImageProcessingAgent import ImageProcessingAgent
 import paho.mqtt.client as mqtt
 import network_config
 
@@ -55,11 +48,10 @@ class CoreAgent(Agent):
                 print(f"[CoreAgent] Sending message to {msgDisplay.to}")
                 await self.send(msgDisplay)
     
-    #class RequestImageBehaviour(CyclicBehaviour):
-    class RequestImageBehaviour(OneShotBehaviour):
+    class RequestImageBehaviour(CyclicBehaviour):
         async def run(self):
-            #image = network_config.IMG_MESSAGE
-            image = cv2.imread(self.agent.img_path)
+            image = network_config.IMG_MESSAGE
+            #image = cv2.imread(self.agent.img_path)
             if(image is not None):
                 network_config.IMG_MESSAGE = None
                 _, img_encoded = cv2.imencode('.jpg', image)
@@ -89,9 +81,8 @@ class CoreAgent(Agent):
         self.client = mqtt.Client("Core")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        ##TODO remove the comment
-        #self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
-        #self.client.loop_start()
+        self.client.connect(self.mqtt_broker, self.mqtt_port, 60)
+        self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code " + str(rc))

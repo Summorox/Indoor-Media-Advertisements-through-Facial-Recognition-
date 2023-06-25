@@ -1,6 +1,5 @@
 import json
 
-import cv2
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.template import Template
