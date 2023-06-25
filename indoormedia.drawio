@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2023-06-24T19:37:34.385Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" etag="6zE7Lw3qNV6IDqF0V_0H" version="21.5.0" type="device">
+<mxfile host="app.diagrams.net" modified="2023-06-25T17:12:07.495Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" etag="mSagGUOvNbSX2Lh4NuOB" version="21.5.0" type="device">
   <diagram name="Page-1" id="j4KkUrHmV3GWsaagCfpN">
-    <mxGraphModel dx="989" dy="530" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1318" dy="467" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="eT5R83WgRnjZct5-d_Fm-3" value="Camera" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.devices.webcam;" parent="1" vertex="1">
-          <mxGeometry x="61" y="160" width="40" height="50" as="geometry" />
+        <mxCell id="eT5R83WgRnjZct5-d_Fm-3" value="ESP32-CAM" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.devices.webcam;" parent="1" vertex="1">
+          <mxGeometry x="61" y="168" width="40" height="50" as="geometry" />
         </mxCell>
         <mxCell id="eT5R83WgRnjZct5-d_Fm-21" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;exitX=0.95;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.43;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="eT5R83WgRnjZct5-d_Fm-38" target="eT5R83WgRnjZct5-d_Fm-32" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -18,13 +18,13 @@
             <mxPoint x="320" y="154.62504545454544" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="eT5R83WgRnjZct5-d_Fm-8" value="Proximity Sensor" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;fontColor=#4277BB;labelBackgroundColor=default;fontSize=12;spacingTop=3;image=img/lib/ibm/users/sensor.svg;" parent="1" vertex="1">
+        <mxCell id="eT5R83WgRnjZct5-d_Fm-8" value="Motion Sensor" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;fontColor=#4277BB;labelBackgroundColor=default;fontSize=12;spacingTop=3;image=img/lib/ibm/users/sensor.svg;" parent="1" vertex="1">
           <mxGeometry x="61" y="30" width="40" height="40" as="geometry" />
         </mxCell>
         <mxCell id="eT5R83WgRnjZct5-d_Fm-14" value="Display Service" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/48-bubbles/48/24.TV-128.png" parent="1" vertex="1">
           <mxGeometry x="40" y="422" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="bg-rTcQURb47KX6NMPc5-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.43;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" edge="1">
+        <mxCell id="bg-rTcQURb47KX6NMPc5-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.43;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.95;entryY=0.95;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" edge="1" target="eT5R83WgRnjZct5-d_Fm-32">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="751" y="278.96000000000004" as="sourcePoint" />
             <mxPoint x="660" y="220" as="targetPoint" />
@@ -59,7 +59,7 @@
         <mxCell id="bg-rTcQURb47KX6NMPc5-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.12;exitY=0.72;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.12;entryY=0.12;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="eT5R83WgRnjZct5-d_Fm-32" target="eT5R83WgRnjZct5-d_Fm-26" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="eT5R83WgRnjZct5-d_Fm-32" value="Core Agent" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.agent;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
+        <mxCell id="eT5R83WgRnjZct5-d_Fm-32" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.agent;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="591" y="160" width="69" height="72" as="geometry" />
         </mxCell>
         <mxCell id="eT5R83WgRnjZct5-d_Fm-38" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.mqtt_protocol;fillColor=#5294CF;gradientColor=none;" parent="1" vertex="1">
@@ -73,32 +73,35 @@
         <mxCell id="bg-rTcQURb47KX6NMPc5-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.42;exitY=0.845;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.42;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="2" target="3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="2" value="Auction Agent" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.agent;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
+        <mxCell id="2" value="" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.agent;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="691" y="350" width="69" height="72" as="geometry" />
         </mxCell>
         <mxCell id="3" value="Auction Participant Agent" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.agent;fillColor=#759C3E;gradientColor=none;" parent="1" vertex="1">
           <mxGeometry x="720" y="470" width="69" height="72" as="geometry" />
         </mxCell>
-        <mxCell id="aeWYi9QPPUx6Je2VcBAC-3" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="aeWYi9QPPUx6Je2VcBAC-4" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="291" y="176.3885714285714" as="sourcePoint" />
-            <mxPoint x="101" y="170.00033613445376" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="200" y="174.16" />
-            </Array>
+            <mxPoint x="101" y="199" as="sourcePoint" />
+            <mxPoint x="291" y="199" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="aeWYi9QPPUx6Je2VcBAC-4" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="eT5R83WgRnjZct5-d_Fm-3" target="eT5R83WgRnjZct5-d_Fm-38">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="320" y="150" as="sourcePoint" />
-            <mxPoint x="370" y="100" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="aeWYi9QPPUx6Je2VcBAC-5" value="" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.43;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="eT5R83WgRnjZct5-d_Fm-26" target="eT5R83WgRnjZct5-d_Fm-14">
+        <mxCell id="aeWYi9QPPUx6Je2VcBAC-5" value="" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.43;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="eT5R83WgRnjZct5-d_Fm-26" target="eT5R83WgRnjZct5-d_Fm-14" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="240" y="440" as="sourcePoint" />
             <mxPoint x="290" y="390" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="D_l6Cq4tTzqtWUaAvq1v-4" value="Core Agent" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="580" y="130" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="D_l6Cq4tTzqtWUaAvq1v-5" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="186" as="sourcePoint" />
+            <mxPoint x="101" y="186" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="D_l6Cq4tTzqtWUaAvq1v-6" value="Auction Agent" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="740" y="371" width="100" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
