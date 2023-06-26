@@ -1,28 +1,9 @@
-//MEO-E9F720
-//53349fb336
-//192.168.1.171
-//1883
-
-#include "esp_camera.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
-
+#include "esp_camera.h"
 #include <base64.h>
-#include "ArduinoJson.h"
-
-// Select camera model
-//#define CAMERA_MODEL_WROVER_KIT
-//#define CAMERA_MODEL_ESP_EYE
-//#define CAMERA_MODEL_M5STACK_PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE
 #define CAMERA_MODEL_AI_THINKER
-
 #include "camera_pins.h"
-
-
-
-// Flash
-#define LED_BUILTIN 4
 
 //WIFI config
 const char* ssid = "NOTEVITORIA";
@@ -36,23 +17,73 @@ const char* mqttUser = "";
 const char* mqttPassword = "";
 const char* topic_PHOTO = "MOTION/DETECTION";
 const char* topic_PUBLISH = "PICTURE";
-const char* topic_FLASH = "FLASH";
 const int MAX_PAYLOAD = 60000;
-
-bool flash;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-
-
 void startCameraServer();
 
+void take_picture() {
+  camera_fb_t * fb = NULL;
+  Serial.println("Taking picture");
+  fb = esp_camera_fb_get(); 
+  if (!fb) {
+    Serial.println("Camera capture failed");
+    return;
+  }
+  Serial.println("Picture taken");
+  sendMQTT(fb->buf, fb->len); // Envia a imagem capturada via MQTT (mem.dados, mem.comp)
+  esp_camera_fb_return(fb); // Libera a memoria do framebuffer
+  
+}
+
+void sendMQTT(const uint8_t * buf, uint32_t len) {
+  Serial.println("Enviando imagem...");
+  camera_fb_t * fb = NULL;
+  fb = esp_camera_fb_get(); // Captura imagem
+  if (!fb) { // Verifica se a captura da imagem foi bem-sucedida
+    Serial.println("Falha na captura da imagem da câmera");
+    return;
+  }
+  String encrypt = base64::encode(fb->buf, fb->len); //formato Base64
+  if (client.publish(topic_PUBLISH, encrypt.c_str())) {
+    Serial.println("Imagem enviada com sucesso");
+  } else {
+    Serial.println("Falha ao enviar imagem");
+  }
+  esp_camera_fb_return(fb);
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect(HostName, mqttUser, mqttPassword)) {
+      Serial.println("connected");
+      client.subscribe(topic_PHOTO);
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void callback(String topic, byte* message, unsigned int length) {
+  String messageTemp;
+  Serial.println(topic);
+  for (int i = 0; i < length; i++) {
+    messageTemp += (char)message[i];
+  }
+  if (topic == topic_PHOTO) {
+    if(messageTemp == "on"){
+      take_picture();
+    }
+  }
+}
+
 void setup() {
-
-  // Define Flash as an output
-  pinMode(LED_BUILTIN, OUTPUT);
-
   // Initialise the Serial Communication
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -80,6 +111,7 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
+
   //init with high specs to pre-allocate larger buffers
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;
@@ -91,39 +123,23 @@ void setup() {
     config.fb_count = 1;
   }
 
-  flash = true;
-
-  // Not used in our project
-  #if defined(CAMERA_MODEL_ESP_EYE)
-    pinMode(13, INPUT_PULLUP);
-    pinMode(14, INPUT_PULLUP);
-  #endif
-
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
-
   sensor_t * s = esp_camera_sensor_get();
-  //initial sensors are flipped vertically and colors are a bit saturated
-  if (s->id.PID == OV3660_PID) {
-    s->set_vflip(s, 1);//flip it back
-    s->set_brightness(s, 1);//up the blightness just a bit
-    s->set_saturation(s, -2);//lower the saturation
+  //sensores iniciais estão invertidos verticalmente e as cores estão um pouco saturadas.
+  if (s->id.PID == OV3660_PID) { //verifica se o ID do sensor é compatível com o sensor OV3660
+    s->set_vflip(s, 1); // vira de volta
+    s->set_brightness(s, 1); // aumenta um pouco o brilho
+    s->set_saturation(s, -2); // diminui a saturação
   }
-  //drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
+  s->set_framesize(s, FRAMESIZE_QVGA); //captura de imagem da câmera, tamanho QVGA (320x240 pixels)
 
-  // Not used in our project
-  #if defined(CAMERA_MODEL_M5STACK_WIDE)
-    s->set_vflip(s, 1);
-    s->set_hmirror(s, 1);
-  #endif
-
+  // Configuração da conexão Wi-Fi
   WiFi.begin(ssid, password);
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -131,8 +147,10 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
+  // Inicialização do servidor da câmera
   startCameraServer();
 
+  // IP local para conexão
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
@@ -141,144 +159,6 @@ void setup() {
   client.setServer(mqttServer, 1883);
   client.setBufferSize (MAX_PAYLOAD); //This is the maximum payload length
   client.setCallback(callback);
-}
-
-void callback(String topic, byte* message, unsigned int length) {
-  String messageTemp;
-  Serial.println(topic);
-  for (int i = 0; i < length; i++) {
-    messageTemp += (char)message[i];
-  }
-  if (topic == topic_PHOTO) {
-    if(messageTemp == "on"){
-      take_picture();
-      //set_flash();
-    }
-    
-  }
-  //if (topic == topic_FLASH) {}
-}
-
-void take_picture() {
-  camera_fb_t * fb = NULL;
-  if(flash){ digitalWrite(LED_BUILTIN, HIGH);};
-  Serial.println("Taking picture");
-  fb = esp_camera_fb_get(); // used to get a single picture.
-  if (!fb) {
-    Serial.println("Camera capture failed");
-    return;
-  }
-  Serial.println("Picture taken");
-  digitalWrite(LED_BUILTIN, LOW);
-  sendMQTT(fb->buf, fb->len);
-  esp_camera_fb_return(fb); // must be used to free the memory allocated by esp_camera_fb_get().
-  
-}
-
-void set_flash() {
-    flash = !flash;
-    Serial.print("Setting flash to ");
-    Serial.println (flash);
-    if(!flash){
-      for (int i=0; i<6; i++){
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-      }
-    }
-    if(flash){
-      for (int i=0; i<3; i++){
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(500);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-      }
-    }
-}
-
-
-void sendMQTT(const uint8_t * buf, uint32_t len) {
-  Serial.println("Enviando imagem...");
-  
-  camera_fb_t * fb = NULL;
-  fb = esp_camera_fb_get(); // Captura uma nova imagem
-  
-  // Verifica se a captura da imagem foi bem-sucedida
-  if (!fb) {
-    Serial.println("Falha na captura da imagem da câmera");
-    return;
-  }
-
-
-
-  String encrypt = base64::encode(fb->buf, fb->len);
-
-
-  // Realiza a conversão para o formato JPEG
-  size_t jpg_len = 0;
-  uint8_t *jpg_buf = NULL;
-  bool jpeg_conversion_ok = frame2jpg(fb, 80, &jpg_buf, &jpg_len);
-  //bool frame2jpg(camera_fb_t *fb, int quality, uint8_t **out_buf, size_t *out_len);
-
-
-
-  // Libera a memória da imagem capturada
-  esp_camera_fb_return(fb);
-
-  // Verifica se a conversão para JPEG foi bem-sucedida
-  if (!jpeg_conversion_ok) {
-    Serial.println("Falha na conversão da imagem para JPEG");
-    return;
-  }
-
-  
-
-  // Envia a imagem em formato JPEG
-  if (jpg_len > MAX_PAYLOAD) {
-    Serial.println("Imagem muito grande, aumente o valor de MAX_PAYLOAD");
-  } else {
-    Serial.print("Imagem enviada? : ");
-    Serial.print(encrypt);
-    
-    
-    if (client.publish(topic_PUBLISH, encrypt.c_str())) {
-      Serial.println(" - publicado com sucesso");
-    } else {
-      Serial.println(" - falha ao publicar");
-    }
-    
-    /*
-    char* img;
-    for (int i = 0; i < encrypt.length(); i++) {
-    img += (char)encrypt[i];
-  }
-    client.publish(topic_PUBLISH, img);
-  }
-  */
-
-  // Libera a memória do buffer JPEG
-  if (jpg_buf) {
-    free(jpg_buf);
-  }
-}}
-
-
-
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect(HostName, mqttUser, mqttPassword)) {
-      Serial.println("connected");
-      client.subscribe(topic_PHOTO);
-      client.subscribe(topic_FLASH);
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
-  }
 }
 
 void loop() {
