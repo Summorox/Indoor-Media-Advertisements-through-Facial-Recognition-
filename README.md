@@ -1,4 +1,4 @@
-# Indoormedia
+# Indoormedia: Multi-Agent System for Targeted Advertising
 ## Overview
 This repository contains a group project developed as part of a master's program in Artificial Intelligence at ISEP, completed in 2023. This project is a prototype for a multi-agent system designed for targeted advertising. The system uses motion detection and facial recognition to identify the demographics of passersby, enabling the display of ads tailored to these characteristics. An auction-based algorithm selects the ad to display based on relevance and potential impact.
 
